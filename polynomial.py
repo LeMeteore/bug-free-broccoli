@@ -1,48 +1,77 @@
 from cmath import sqrt
 import matplotlib.pyplot as plt  # type:ignore
 
-
 class Poly2:
-    """ Classe permettant de representer un polynôme de degré 2."""
 
     def __init__(self, *coeffs):
-        """ Méthode constructeur qui prend en paramètre, les coefficients du polynôme"""
-        pass
+        assert len(coeffs) == 3, "Un polynome de degré 2 devrait avoir 3 coefficients"
+        self.coeffs = {deg: co for deg, co in enumerate(coeffs[::-1])}
 
     def __add__(self, other):
-        """Addition 2 polynômes et qui renvoi du nouveau polynôme"""
-        pass
+        assert isinstance(other, Poly2)
+        result = Poly2(0, 0, 0)
+        result.coeffs = {**self.coeffs}
+        for exp, c in other.coeffs.items():
+            result.coeffs[exp] = result.coeffs.get(exp, 0) + c
+        return result
 
     def __sub__(self, other):
-        """Soustraction de 2 polynômes et renvoi du nouveau polynôme"""
-        pass
+        assert isinstance(other, Poly2)
+        result = Poly2(0, 0, 0)
+        result.coeffs = {**self.coeffs}
+        for exp, c in other.coeffs.items():
+            result.coeffs[exp] = result.coeffs.get(exp, 0) - c
+        return result
 
     def __repr__(self):
-        msg = 'Poly2(' + ', '.join([str(c) for c in sorted(self.coeffs.values())]) + ')'
+        msg = "Poly2(" + ", ".join([str(c) for c in sorted(self.coeffs.values())]) + ")"
         return msg
 
-    def __str__(self):
-        """Méthode qui personalise la chaîne de caractère affichée par la fonction print
-        Si: p1 = Poly(3, -4, 2)
-        Alors print(p1) affiche: '2X^2 - 4X + 3'
-        """
-        pass
+    def __str__(self, var_string='X'):
+        res = ''
+        first_pow = len(self.coeffs) - 1
+        for i, coef in self.coeffs.items():
+            power = first_pow - i
+
+            if coef:
+                if coef < 0:
+                    sign, coef = (' - ' if res else '- '), -coef
+                elif coef > 0: # must be true
+                    sign = (' + ' if res else '')
+
+                str_coef = '' if coef == 1 and power != 0 else str(coef)
+
+                if power == 0:
+                    str_power = ''
+                elif power == 1:
+                    str_power = var_string
+                else:
+                    str_power = var_string + '^' + str(power)
+
+                res += sign + str_coef + str_power
+        return res
 
     def solve(self):
-        """ Méthode qui renvoie les solutions si elles existent."""
-        pass
+        a, b, c = self.coeffs.values()
+        delta = sqrt(b**2 - 4*a*c)
+        x1 = (-b + delta)/(2*a)
+        x2 = (-b - delta)/(2*a)
+        return x1, x2
 
-    def __val(self, x):
-        """ Méthode qui calcule et renvoie la valeur de y en fonction de x.
-        Si: y = x^2 + 1
-        Si: x prend pour valeur 5
-        Alors: y = 5^2 + 1 = 26
-        """
-        pass
+    def _val(self, v):
+        value = sum([pow((v*co), deg) for deg, co in self.coeffs.items()])
+        return value
 
     def draw(self, x_points=None):
-        """ Méthode qui trace la courbe, voir fichier png."""
-        pass
+        if x_points is None:
+            x_points = range(0, 20)
+        y_points = [self._val(x) for x in x_points]
+        plt.style.use('seaborn-whitegrid')
+        plt.scatter(x_points, y_points, marker='x', c="green")
+        plt.xlabel("Abscisses")
+        plt.ylabel("Ordonnées")
+        plt.title(self.__str__())
+        plt.show()
 
 
 if __name__ == "__main__":
